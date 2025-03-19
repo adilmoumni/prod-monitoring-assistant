@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from google.cloud.trace_v1 import ListTracesRequest
 # mypy: disable-error-code="union-attr"
 from langchain_core.messages import BaseMessage
 from langchain_core.runnables import RunnableConfig
@@ -19,21 +19,58 @@ from langchain_core.tools import tool
 from langchain_google_vertexai import ChatVertexAI
 from langgraph.graph import END, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
+from github import Github
+from github import Auth
+
+from google.cloud import trace_v1
+from datetime import datetime, timedelta, timezone
 
 LOCATION = "us-central1"
 LLM = "gemini-2.0-flash-001"
 
+GOOGLE_APPLICATION_CREDENTIALS=""
+project_name = ""
+
+GITHUB_TOKEN = ""
+
+system_message = """
+You are a monitoring agent in charge of checking the logs of a deployed environment.
+When asked to, you should query the recent logs (last 24h) of a GCP environment and check if any error is present.
+When such an error is present and feature an easily identifiable file, you will search this file in its Github repository, find the line of error and propose a fix to the user.
+"""
+
 
 # 1. Define tools
 @tool
-def search(query: str) -> str:
-    """Simulates a web search. Use it get information on weather"""
-    if "sf" in query.lower() or "san francisco" in query.lower():
-        return "It's 60 degrees and foggy."
-    return "It's 90 degrees and sunny."
+def check_gcp_log() -> str:
+    client = trace_v1.TraceServiceClient()
+
+    end_time = datetime.now(timezone.utc)
+    start_time = end_time - timedelta(days=1)
+
+    request = trace_v1.ListTracesRequest(
+        project_id=project_name,
+        start_time=start_time,
+        end_time=end_time,
+    )
+
+    traces = client.list_traces(request=request)
+    return str(traces)
+
+@tool
+def query_github_file(
+        relative_path: str
+) -> str:
+    """Get the code source of a files on the GitHub repository."""
+    auth = Auth.Token("access_token")
+    g = Github(auth=auth)
+    repo = g.get_repo("dashq-norma/dashq-api-service")
+    file_content = repo.get_contents(relative_path, ref="dev")
+    g.close()
+    return file_content.decoded_content.decode("utf-8")
 
 
-tools = [search]
+tools = [check_gcp_log, query_github_file]
 
 # 2. Set up the language model
 llm = ChatVertexAI(
@@ -50,7 +87,6 @@ def should_continue(state: MessagesState) -> str:
 
 def call_model(state: MessagesState, config: RunnableConfig) -> dict[str, BaseMessage]:
     """Calls the language model and returns the response."""
-    system_message = "You are a helpful AI assistant."
     messages_with_system = [{"type": "system", "content": system_message}] + state[
         "messages"
     ]

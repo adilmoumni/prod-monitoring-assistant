@@ -43,7 +43,7 @@ make install
 If not done during the initialization, set your default Google Cloud project and Location:
 
 ```bash
-export PROJECT_ID="YOUR_PROJECT_ID"
+export PROJECT_ID="qwiklabs-gcp-03-98e7977f8112"
 export LOCATION="us-central1"
 gcloud config set project $PROJECT_ID
 gcloud auth application-default login
