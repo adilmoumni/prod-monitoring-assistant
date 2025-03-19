@@ -26,8 +26,7 @@ from dotenv import load_dotenv
 import os
 import requests
 import json
-from google.cloud import trace_v1
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
 load_dotenv()
@@ -87,29 +86,6 @@ def send_slack_alert(error_logs, severity="DEFAULT", dry_run=False):
 
 
 # 2. Define tools
-@tool
-def check_gcp_traces(start_time: str, end_time: str) -> str:
-    """Check GCP traces for anomalies and return relevant details."""
-    client = trace_v1.TraceServiceClient()
-
-    start_time = datetime.fromisoformat(start_time.replace("Z", "+00:00"))
-    end_time = datetime.fromisoformat(end_time.replace("Z", "+00:00"))
-
-    request = trace_v1.ListTracesRequest(
-        project_id=GCP_PROJECT_NAME,
-        start_time=start_time,
-        end_time=end_time,
-    )
-
-    traces = client.list_traces(request=request)
-    traces_str = str(traces)
-
-    if "error" in traces_str.lower() or "exception" in traces_str.lower():
-        send_slack_alert(traces_str)
-
-    return traces_str
-
-
 @tool
 def get_gcp_logs(start_time: str, end_time: str) -> str:
     """
@@ -204,7 +180,7 @@ def search_github_code(query: str) -> str:
     except Exception as e:
         return f"Exception during GitHub code search: {e}"
 
-tools = [get_gcp_logs, check_gcp_traces, query_github_file, search_github_repo, search_github_code]
+tools = [get_gcp_logs, query_github_file, search_github_repo, search_github_code]
 
 # 3. Set up the language model
 llm = ChatVertexAI(
