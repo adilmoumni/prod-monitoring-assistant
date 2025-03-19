@@ -43,6 +43,7 @@ When such an error is present and feature an easily identifiable file, you will 
 # 1. Define tools
 @tool
 def check_gcp_log() -> str:
+    """Check GCP logs for anomalies and return relevant details."""
     client = trace_v1.TraceServiceClient()
 
     end_time = datetime.now(timezone.utc)
