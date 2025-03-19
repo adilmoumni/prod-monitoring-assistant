@@ -37,7 +37,7 @@ steps:
       - "--service-account"
       - "${_CLOUD_RUN_APP_SA_NAME}@${_PROD_PROJECT_ID}.iam.gserviceaccount.com"
       - "--set-env-vars"
-      - "COMMIT_SHA=${COMMIT_SHA},ACCESS_TOKEN=$$_ACCESS_TOKEN"
+      - "COMMIT_SHA=${COMMIT_SHA},ACCESS_TOKEN=${_ACCESS_TOKEN}"
 
 substitutions:
   _PROD_PROJECT_ID: "YOUR_PROD_PROJECT_ID"
