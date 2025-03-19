@@ -19,6 +19,7 @@ from langchain_core.tools import tool
 from langchain_google_vertexai import ChatVertexAI
 from langgraph.graph import END, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
+from google.cloud import logging
 from github import Github
 from github import Auth
 from dotenv import load_dotenv
@@ -33,18 +34,15 @@ load_dotenv()
 LOCATION = "us-central1"
 LLM = "gemini-2.0-flash-001"
 
-GOOGLE_APPLICATION_CREDENTIALS=""
-project_name = ""
-
-GITHUB_TOKEN = ""
-
 system_message = """
 You are a monitoring agent in charge of checking the logs of a deployed environment.
 When asked to, you should query the recent logs (last 24h) of a GCP environment and check if any error is present.
 When such an error is present and feature an easily identifiable file, you will search this file in its Github repository, find the line of error and propose a fix to the user.
 """
 
-SLACK_WEBHOOK_URL=os.environ.get("SLACK_WEBHOOK_URL")
+SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL")
+GCP_PROJECT_NAME = os.environ.get("GCP_PROJECT_NAME")
+CLOUD_RUN_NAME = os.environ.get("CLOUD_RUN_NAME")
 
 # 1. Create an alert context
 # severity="DEFAULT" should be switch to "ERROR" in prod.
@@ -74,26 +72,59 @@ def send_slack_alert(error_logs, severity="DEFAULT", dry_run=False):
 
 # 2. Define tools
 @tool
-def check_gcp_log() -> str:
-    """Check GCP logs for anomalies and return relevant details."""
+def check_gcp_traces(start_time: str, end_time: str) -> str:
+    """Check GCP traces for anomalies and return relevant details."""
     client = trace_v1.TraceServiceClient()
 
-    end_time = datetime.now(timezone.utc)
-    start_time = end_time - timedelta(days=1)
+    start_time = datetime.fromisoformat(start_time.replace("Z", "+00:00"))
+    end_time = datetime.fromisoformat(end_time.replace("Z", "+00:00"))
 
     request = trace_v1.ListTracesRequest(
-        project_id=project_name,
+        project_id=GCP_PROJECT_NAME,
         start_time=start_time,
         end_time=end_time,
     )
 
     traces = client.list_traces(request=request)
-    logs_str = str(traces)
+    traces_str = str(traces)
 
-    if "error" in logs_str.lower() or "exception" in logs_str.lower():
-        send_slack_alert(logs_str)
+    if "error" in traces_str.lower() or "exception" in traces_str.lower():
+        send_slack_alert(traces_str)
 
-    return logs_str
+    return traces_str
+
+
+@tool
+def get_gcp_logs(start_time: str, end_time: str) -> str:
+    """
+    Get app logs within a specified timestamp range.
+
+    Args:
+        start_time (datetime): The start time (inclusive) for the log query in UTC.
+        end_time (datetime): The end time (exclusive) for the log query in UTC.
+
+    Returns:
+        str: A string representation of the retrieved log entries.
+    """
+
+    # Convert start_time and end_time to datetime objects if they are provided as strings.
+
+    # Initialize the client
+    client = logging.Client()
+
+    # Define a filter for Cloud Run logs with a timestamp range.
+    # Note: Ensure start_time and end_time are timezone-aware or in UTC.
+    filter_str = (
+        f'resource.labels.service_name="{CLOUD_RUN_NAME}" '
+        f'AND timestamp >= "{start_time}" '
+        f'AND timestamp < "{end_time}"'
+    )
+
+    # List log entries using the filter
+    entries = list(client.list_entries(filter_=filter_str))
+
+    return str(entries)
+
 
 @tool
 def query_github_file(
@@ -108,7 +139,7 @@ def query_github_file(
     return file_content.decoded_content.decode("utf-8")
 
 
-tools = [check_gcp_log, query_github_file]
+tools = [get_gcp_logs, check_gcp_traces, query_github_file]
 
 # 3. Set up the language model
 llm = ChatVertexAI(
@@ -125,7 +156,10 @@ def should_continue(state: MessagesState) -> str:
 
 def call_model(state: MessagesState, config: RunnableConfig) -> dict[str, BaseMessage]:
     """Calls the language model and returns the response."""
-    messages_with_system = [{"type": "system", "content": system_message}] + state[
+    messages_with_system = [
+                               {"type": "system", "content": system_message},
+                               {"type": "system", "content": f"The current date is {datetime.now().strftime('%Y-%m-%d')}."},
+                           ] + state[
         "messages"
     ]
     # Forward the RunnableConfig object to ensure the agent is capable of streaming the response.
