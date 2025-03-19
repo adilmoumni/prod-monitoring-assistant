@@ -45,7 +45,7 @@ substitutions:
   _REGION: "us-central1"
   _GCP_PROJECT_NAME: "dashq-dev"
   _CLOUD_RUN_NAME: "dashq-api-service"
-  _PROJECT_ID: "qwiklabs-gcp-03-98e7977f8112"
+  # _PROJECT_ID: "qwiklabs-gcp-03-98e7977f8112"
 
 logsBucket: gs://${PROJECT_ID}-logs-data/build-logs
 options:
@@ -54,5 +54,5 @@ options:
 
 availableSecrets:
   secretManager:
-    - versionName: "projects/$_PROJECT_ID/secrets/SLACK_WEBHOOK_URL/versions/latest"
+    - versionName: "projects/$_PROD_PROJECT_ID/secrets/SLACK_WEBHOOK_URL/versions/latest"
       env: "SLACK_WEBHOOK_URL"
