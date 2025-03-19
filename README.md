@@ -4,6 +4,30 @@ A agent implementing a base ReAct agent using LangGraph
 
 Agent generated with [`googleCloudPlatform/agent-starter-pack`](https://github.com/GoogleCloudPlatform/agent-starter-pack)
 
+
+## Project Overview
+
+**Prod Monitoring Assistant** is an intelligent agent that helps **monitor production environments**, **analyze logs**, and **detect issues** in real time. It provides actionable insights and assists developers with debugging through an interactive **Slack bot** and **API interface**.
+
+### Key Features
+
+✅ **Automated Issue Detection** – Analyzes logs, traces, and recent code changes to pinpoint root causes.  
+✅ **Slack Bot Integration** – Developers can interact with the agent via Slack for real-time troubleshooting.  
+✅ **Production Monitoring** – Monitors multiple production environments 24/7, ensuring continuous uptime.  
+✅ **FastAPI Backend** – Serves as the core interface for communication between the agent, the frontend, and external integrations.  
+✅ **Cloud-Native Deployment** – Uses Terraform for infrastructure as code and Google Cloud services for scalability.  
+
+---
+
+## How It Works
+
+1. **Monitor Production Logs** – The agent continuously analyzes logs and traces to detect anomalies.  
+2. **Identify Issues** – Using AI, it identifies potential root causes, such as failed API calls, incorrect schema validation, or resource exhaustion.  
+3. **Explain & Suggest Fixes** – The agent provides detailed explanations of detected errors and recommends debugging steps.  
+4. **Interact via Slack** – Developers can chat with the agent in Slack to request insights and troubleshooting steps.  
+5. **Improve Over Time** – The system continuously learns from past issues to provide better recommendations.  
+
+
 ## Project Structure
 
 This project is organized as follows:
