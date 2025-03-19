@@ -28,13 +28,14 @@ import requests
 import json
 from google.cloud import trace_v1
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 load_dotenv()
 
 LOCATION = "us-central1"
 LLM = "gemini-2.0-flash-001"
 
-system_message = """
+system_message = f"""
 You are an advanced production monitoring agent responsible for overseeing our deployed environment. Your tasks include:
 
 1. Querying logs and traces from the past 24 hours—do not look beyond this period.
@@ -51,12 +52,13 @@ You are an advanced production monitoring agent responsible for overseeing our d
 4. If no anomalies or errors are found, confirm that the system is operating normally.
 
 Always include relevant context (e.g., error details, affected file names) in your responses and ensure that the timeframe does not exceed 24 hours.
-Current date: {datetime.now().strftime('%Y-%m-%d')}
+Current date and time (Europe/Paris): {datetime.now(ZoneInfo("Europe/Paris")).strftime('%Y-%m-%d %H:%M')}
 """
 
 SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL")
 GCP_PROJECT_NAME = os.environ.get("GCP_PROJECT_NAME")
 CLOUD_RUN_NAME = os.environ.get("CLOUD_RUN_NAME")
+ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
 
 # 1. Create an alert context
 # severity="DEFAULT" should be switch to "ERROR" in prod.
@@ -145,7 +147,9 @@ def query_github_file(
         relative_path: str
 ) -> str:
     """Get the code source of a files on the GitHub repository."""
-    auth = Auth.Token("access_token")
+    print('==================== GET GITHUB FILE ====================')
+    print(relative_path)
+    auth = Auth.Token(ACCESS_TOKEN)
     g = Github(auth=auth)
     repo = g.get_repo("dashq-norma/dashq-api-service")
     file_content = repo.get_contents(relative_path, ref="dev")
@@ -153,7 +157,54 @@ def query_github_file(
     return file_content.decoded_content.decode("utf-8")
 
 
-tools = [get_gcp_logs, check_gcp_traces, query_github_file]
+@tool
+def search_github_repo(query: str) -> str:
+    """
+    Search the GitHub repository for files matching the query.
+    Args:
+        query (str): A keyword or regex pattern to filter file names.
+    Returns:
+        str: A list of file paths (as a string) that match the query.
+    """
+    auth = Auth.Token(ACCESS_TOKEN)
+    g = Github(auth=auth)
+    try:
+        repo = g.get_repo("dashq-norma/dashq-api-service")
+        # Retrieve the entire repository tree (you may need to adjust branch as needed)
+        tree = repo.get_git_tree("main", recursive=True)
+        matching_files = [file.path for file in tree.tree if query.lower() in file.path.lower()]
+        return json.dumps(matching_files, indent=2)
+    except Exception as e:
+        return f"GitHub repository search error: {e}"
+    finally:
+        g.close()
+        
+@tool
+def search_github_code(query: str) -> str:
+    """
+    Searches the GitHub repository for files containing the specified query string.
+    Args:
+        query (str): The keyword or phrase to search within file contents.
+    Returns:
+        str: A JSON-formatted list of matching file paths and code snippets.
+    """
+    try:
+        headers = {"Authorization": f"token {ACCESS_TOKEN}"}
+        search_url = "https://api.github.com/search/code"
+        # The 'q' parameter combines the query with the repository qualifier.
+        params = {
+            "q": f"{query} repo:dashq-norma/dashq-api-service",
+            "per_page": 10
+        }
+        response = requests.get(search_url, headers=headers, params=params)
+        if response.status_code != 200:
+            return f"GitHub code search error: {response.text}"
+        results = response.json()
+        return json.dumps(results, indent=2)
+    except Exception as e:
+        return f"Exception during GitHub code search: {e}"
+
+tools = [get_gcp_logs, check_gcp_traces, query_github_file, search_github_repo, search_github_code]
 
 # 3. Set up the language model
 llm = ChatVertexAI(
@@ -171,8 +222,7 @@ def should_continue(state: MessagesState) -> str:
 def call_model(state: MessagesState, config: RunnableConfig) -> dict[str, BaseMessage]:
     """Calls the language model and returns the response."""
     messages_with_system = [
-                               {"type": "system", "content": system_message},
-                               {"type": "system", "content": f"The current date is {datetime.now().strftime('%Y-%m-%d')}."},
+                               {"type": "system", "content": system_message}
                            ] + state[
         "messages"
     ]

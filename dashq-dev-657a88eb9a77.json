@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "dashq-dev",
+  "private_key_id": "657a88eb9a7792f80479aed19f35368206a7e474",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDfOR+52xTPIUd8\nMmqTaZayMmDG6BgaaDWRFuaTCMltqzLfYrH36d3rXLq6LztTD3yMUxYpESqSHdOE\nQ6UMJr1l3YOhDb4SQAyXyxwJ9tCBnZCsVZNEExgvywR7VxpUKI/pKY9erEieZh2e\noIudDdSF433TFr/eRWVutv2kOqkI2YDM5OTpuuhYi/FBGHmAQYlB8RMwMSp2DoBV\nuUW6Dm6IOnyiEFMOrykHZ/ROTUMaQfkBl3H/bELvtA3z/uxQtNqRzI3xqIlGhhfz\nlb7OHsSTTf2cKxPJI5leM4wYcE4MUcQEFudBwFZavgEe098KfafEE0QPghyyhLd8\nEr0UV/fFAgMBAAECggEARi2zZ78U37nau5UuJIJBumxUOLSnP0Yb8S19+CP/D9eO\n+uQQh5yjBGf23KoUwJxRz9wfT3HyLFXsNdz+er+DNA9cXrnvU9WHIAHfItLR4q4i\n2ctdrT1DkWMGWbCcunC2Ldu/E0ie3A3GqiRXQF0kv6Mx37d7QuoWZaRqQcOfeQQy\nRX4pgXMJTThN7Oi4F/pMl5NwLbKCivkAoFfZ15T5vq0HfJOEBwuIHgsdEDnbiB6V\nzohgET2NeLksshd81d4ytKODY+oUvcY8j7KM+1GXLfM9n2D9Krg4ImjMkYnScbf3\no0T/agXfOO9zS5FHdrWzcnixi8OY5hKIJo5IdfOc0QKBgQDw18hNq5EPWPb1U9Fw\nKvZXBumTjxSOCX/jGzRVQT24F/OAnheK48prs7JS7ejr5y2Ae7EI8XEeyFF0vQh6\n+rqiklWYC5KDy3Jbe/33lLhtALBflRWN2rwR5rYKWsLOcT4yI43mw8MqJGkoyQzL\nst8TUjhh3VSt3csSeEKiDCDGbwKBgQDtRXg/lBYh9BTe1nuBmKfteTPVS+TlNvyz\n3+l0FQjBuX/QNe6JUOs1+g/YZtEJGQLnMGP3uHp8fZSHSE4syLHmQeKCTklm8UYz\nkmRIEhsEVRucG0d2xtOjkFQFUKht6ylSONexIobS3js/Rio8veK9fnoRzVLl1utE\nMAPOC5gfCwKBgQDnuMVYrXypBpC9Y4K76CoRe24acex16H/qM097w4StbiXzlqfS\nEu68By3IimyzJD7sQpYHo72Rv2xX5FSXdktBhYfi/SdftMv3Z2nn3mg/QA1yOU9+\np3iRxKdbeQ27cMtFlF3ALJPHJTckbaPpDNWCknX6+uexTRdIUvrRTNfv8wKBgQDj\njPBZ6SegwHkTjRc9nq3OLaLsOLD4std/mopF7bZMNB7EDDUMNDKfvYZcv55R307N\ncbct6BpwMe+0Hj/66y7R6PXWikYTF+l/pDHQfKy0Zvrnp7HN07k88DnkLwqZACLM\n2/7fvoEW0lJ3yE7RmjpOCXIAiK2sB4XyCypa/PuTKQKBgQDS0NWgj+FYhA2BUvIl\nyu44BhjM7rIPZccE7UUUwwQGnDGZGn/1cd9bwlYcye1wgTh9pmetAFmOEb8AC8UI\n4RG+XukSL2KbrWl3UdMmfY9CSRCa8HviPYG47Bwrn5X34i1Fd36b85S52BPHPfgk\nQW+JIsouNLsTZpi5Uo4yJEqkdw==\n-----END PRIVATE KEY-----\n",
+  "client_email": "agent-monitoring@dashq-dev.iam.gserviceaccount.com",
+  "client_id": "101880689617689119906",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/agent-monitoring%40dashq-dev.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
