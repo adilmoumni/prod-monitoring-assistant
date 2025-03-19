@@ -17,7 +17,6 @@ dependencies = [
     "opentelemetry-exporter-gcp-trace~=1.9.0",
     "traceloop-sdk~=0.38.7",
     "google-cloud-logging~=3.11.4",
-    "google-cloud-trace~=1.16.1",
     "google-cloud-aiplatform[evaluation]~=1.81.0",
     "fastapi~=0.115.8",
     "uvicorn~=0.34.0",
