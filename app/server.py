@@ -15,13 +15,14 @@
 import logging
 import os
 from collections.abc import Generator
-
+import requests
+import json
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse, StreamingResponse
 from google.cloud import logging as google_cloud_logging
 from langchain_core.runnables import RunnableConfig
 from traceloop.sdk import Instruments, Traceloop
-
+from fastapi.middleware.cors import CORSMiddleware
 from app.agent import agent
 from app.utils.tracing import CloudTraceLoggingSpanExporter
 from app.utils.typing import Feedback, InputChat, Request, dumps, ensure_valid_config
@@ -33,7 +34,17 @@ app = FastAPI(
 )
 logging_client = google_cloud_logging.Client()
 logger = logging_client.logger(__name__)
+SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL")
 
+
+app.add_middleware(
+    CORSMiddleware,
+    # backend Cloud run URL
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 # Initialize Telemetry
 try:
     Traceloop.init(
@@ -119,6 +130,10 @@ def stream_chat_events(request: Request) -> StreamingResponse:
         stream_messages(input=request.input, config=request.config),
         media_type="text/event-stream",
     )
+
+# severity="DEFAULT" should be switch to "ERROR" in prod.
+# @app.post("/send_slack_message")
+
 
 
 # Main execution
