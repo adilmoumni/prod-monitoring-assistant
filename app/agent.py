@@ -21,9 +21,14 @@ from langgraph.graph import END, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
 from github import Github
 from github import Auth
-
+from dotenv import load_dotenv
+import os
+import requests
+import json
 from google.cloud import trace_v1
 from datetime import datetime, timedelta, timezone
+
+load_dotenv()
 
 LOCATION = "us-central1"
 LLM = "gemini-2.0-flash-001"
@@ -39,8 +44,35 @@ When asked to, you should query the recent logs (last 24h) of a GCP environment 
 When such an error is present and feature an easily identifiable file, you will search this file in its Github repository, find the line of error and propose a fix to the user.
 """
 
+SLACK_WEBHOOK_URL=os.environ.get("SLACK_WEBHOOK_URL")
 
-# 1. Define tools
+# 1. Create an alert context
+# severity="DEFAULT" should be switch to "ERROR" in prod.
+def send_slack_alert(error_logs, severity="DEFAULT", dry_run=False):
+    """Sends an error message with GCP logs."""
+
+    payload = {
+        "attachments": [
+            {
+                "fallback": f"*{severity} in production",
+                "text": f"```{error_logs}```",
+
+            }
+        ]
+    }
+
+    if dry_run:
+        print("[Test] Slack alert:", json.dumps(payload, indent=2))
+        return
+
+    headers = {"Content-Type": "application/json"}
+    response = requests.post(SLACK_WEBHOOK_URL, data=json.dumps(payload), headers=headers)
+
+    if response.status_code != 200:
+        print(f"Error while sending message to Slack: {response.text}")
+
+
+# 2. Define tools
 @tool
 def check_gcp_log() -> str:
     """Check GCP logs for anomalies and return relevant details."""
@@ -56,7 +88,12 @@ def check_gcp_log() -> str:
     )
 
     traces = client.list_traces(request=request)
-    return str(traces)
+    logs_str = str(traces)
+
+    if "error" in logs_str.lower() or "exception" in logs_str.lower():
+        send_slack_alert(logs_str)
+
+    return logs_str
 
 @tool
 def query_github_file(
@@ -73,13 +110,13 @@ def query_github_file(
 
 tools = [check_gcp_log, query_github_file]
 
-# 2. Set up the language model
+# 3. Set up the language model
 llm = ChatVertexAI(
     model=LLM, location=LOCATION, temperature=0, max_tokens=1024, streaming=True
 ).bind_tools(tools)
 
 
-# 3. Define workflow components
+# 4. Define workflow components
 def should_continue(state: MessagesState) -> str:
     """Determines whether to use tools or end the conversation."""
     last_message = state["messages"][-1]
@@ -96,15 +133,15 @@ def call_model(state: MessagesState, config: RunnableConfig) -> dict[str, BaseMe
     return {"messages": response}
 
 
-# 4. Create the workflow graph
+# 5. Create the workflow graph
 workflow = StateGraph(MessagesState)
 workflow.add_node("agent", call_model)
 workflow.add_node("tools", ToolNode(tools))
 workflow.set_entry_point("agent")
 
-# 5. Define graph edges
+# 6. Define graph edges
 workflow.add_conditional_edges("agent", should_continue)
 workflow.add_edge("tools", "agent")
 
-# 6. Compile the workflow
+# 7. Compile the workflow
 agent = workflow.compile()
