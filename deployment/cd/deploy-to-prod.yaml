@@ -38,7 +38,7 @@ steps:
       - "--service-account"
       - "${_CLOUD_RUN_APP_SA_NAME}@${_PROD_PROJECT_ID}.iam.gserviceaccount.com"
       - "--set-env-vars"
-      - "COMMIT_SHA=${COMMIT_SHA},SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}"
+      - "COMMIT_SHA=${COMMIT_SHA},SLACK_WEBHOOK_URL=$$SLACK_WEBHOOK_URL"
 
 substitutions:
   _PROD_PROJECT_ID: "YOUR_PROD_PROJECT_ID"
