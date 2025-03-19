@@ -13,9 +13,9 @@
 # limitations under the License.
 
 steps:
-   
   - name: "gcr.io/cloud-builders/gcloud"
     id: trigger-deployment
+    secretEnv: ["SLACK_WEBHOOK_URL"]
     entrypoint: gcloud
     args:
       - "run"
@@ -26,7 +26,7 @@ steps:
       - "--region"
       - "$_REGION"
       - "--project"
-      - $_PROD_PROJECT_ID
+      - "$_PROD_PROJECT_ID"
       - "--min-instances"
       - "1"
       - "--cpu"
@@ -38,11 +38,11 @@ steps:
       - "--service-account"
       - "${_CLOUD_RUN_APP_SA_NAME}@${_PROD_PROJECT_ID}.iam.gserviceaccount.com"
       - "--set-env-vars"
-      - "COMMIT_SHA=${COMMIT_SHA}"
+      - "COMMIT_SHA=${COMMIT_SHA},SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}"
 
 substitutions:
-  _PROD_PROJECT_ID: YOUR_PROD_PROJECT_ID
-  _REGION: us-central1
+  _PROD_PROJECT_ID: "YOUR_PROD_PROJECT_ID"
+  _REGION: "us-central1"
   _GCP_PROJECT_NAME: "dashq-dev"
   _CLOUD_RUN_NAME: "dashq-api-service"
   _PROJECT_ID: "qwiklabs-gcp-03-98e7977f8112"
@@ -51,3 +51,8 @@ logsBucket: gs://${PROJECT_ID}-logs-data/build-logs
 options:
   substitutionOption: ALLOW_LOOSE
   defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
+
+availableSecrets:
+  secretManager:
+    - versionName: "projects/$_PROJECT_ID/secrets/SLACK_WEBHOOK_URL/versions/latest"
+      env: "SLACK_WEBHOOK_URL"
