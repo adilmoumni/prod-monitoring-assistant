@@ -43,6 +43,9 @@ steps:
 substitutions:
   _PROD_PROJECT_ID: YOUR_PROD_PROJECT_ID
   _REGION: us-central1
+  _GCP_PROJECT_NAME: "dashq-dev"
+  _CLOUD_RUN_NAME: "dashq-api-service"
+  _PROJECT_ID: "qwiklabs-gcp-03-98e7977f8112"
 
 logsBucket: gs://${PROJECT_ID}-logs-data/build-logs
 options:
