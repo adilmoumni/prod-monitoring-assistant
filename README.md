@@ -1,3 +1,15 @@
+# 🏆 Winner – Agentic Era Hackathon 2025 (EMEA)
+
+I’m proud to share that this project won the Agentic Era Hackathon 2025 for EMEA Partners, earning the official badge issued by Explore Google Cloud.
+
+Badge:
+Earned for successfully developing and deploying a production-ready Agentic AI application during the “Agentic Era Hackathon 2025 for EMEA Partners.”
+This badge recognizes proficiency in using the agent-starter-pack template, integrating Google’s Gen AI services, and building a complete, end-to-end solution on Google Cloud.
+
+
+<img width="720" height="720" alt="blob" src="https://github.com/user-attachments/assets/f6a5a7d1-0d34-409e-a3c8-5cc3ad4b5572" />
+
+
 # prod-monitoring-assistant
 
 A agent implementing a base ReAct agent using LangGraph
