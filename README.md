@@ -7,7 +7,7 @@ Earned for successfully developing and deploying a production-ready Agentic AI a
 This badge recognizes proficiency in using the agent-starter-pack template, integrating Google’s Gen AI services, and building a complete, end-to-end solution on Google Cloud.
 
 
-<img width="720" height="720" alt="blob" src="https://github.com/user-attachments/assets/f6a5a7d1-0d34-409e-a3c8-5cc3ad4b5572" />
+<img width="300" height="300" alt="blob" src="https://github.com/user-attachments/assets/f6a5a7d1-0d34-409e-a3c8-5cc3ad4b5572" />
 
 
 # prod-monitoring-assistant
